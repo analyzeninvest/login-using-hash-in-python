@@ -1,19 +1,12 @@
 #!/usr/bin/env python
 
-"""
-data_file = 'data.csv'
-attempts = 3
-"""
-
-def validate_input_username_password(datFile,attempts):
+def validate_input_username_password(datFile='data.csv', attempts=3):
 
     """This is a function for validating the username & password. The
     username and password is read from the datFile. The max number of
     tries is defined by the attempts agruments."""    
 
-    from passlib.hash import pbkdf2_sha512 as ps
     from getpass import getpass
-    import csv
     while True:
         print '\n'
         username = raw_input("Username: ")
@@ -21,21 +14,15 @@ def validate_input_username_password(datFile,attempts):
         if attempts == 0:
             print("Max number of incorrect username Or password reached.")
             return False
-        with open(datFile, 'rb') as csv_file:
-            csv_reader = csv.DictReader(csv_file, delimiter=',')
-            for row in csv_reader:
-                username_hash = row['username']
-                password_hash = row['password']
-                if ps.verify(username, username_hash):
-                    if ps.verify(password,password_hash):
-                        print("Both username & password is correct.")
-                        return True
+        if validate_from_data_by_field(datFile, username, 'username') and validate_from_data_by_field(datFile, password, 'password'):
+            print("Both username & password are correct.")
+            return True
         attempts -=1
         print("incorrect username or password, you have " + str(attempts) + " more tries")
 
 
 
-def add_new_user(datFile):
+def add_new_user(datFile='data.csv', attempts=5):
     
     """This is a function for adding new user and password. The new user
     data is stored in datFile. """
@@ -43,18 +30,28 @@ def add_new_user(datFile):
     from getpass import getpass
     from passlib.hash import pbkdf2_sha512 as ps
     import csv
-    username = raw_input("Username: ")
-    password = getpass("Password: ")
-    if check_password_rules(password):
-        print("Password is obeying password rules.")
-        cust_ps = ps.using(salt_size=128, rounds=100000)
-        username_hash = cust_ps.hash(username)
-        password_hash = cust_ps.hash(password)
-        with open(datFile, 'ab') as csv_file:
-            csv_writer = csv.DictWriter(csv_file, fieldnames=['username','password'], lineterminator = '\n')
-            csv_writer.writerow({'username':username_hash, 'password': password_hash})
-    else:
-        print("Password needs to obey the password rules.")
+    while True:
+        if attempts==0:
+            print("max numver of attempts reached")
+            return False
+        username = raw_input("Username: ")
+        if validate_from_data_by_field(datFile, username, 'username'):
+            print("username already exists, Please pick a different name")
+            attempts -= 1
+        else:
+            password = getpass("Password: ")
+            if check_password_rules(password):
+                print("Password is obeying password rules.")
+                cust_ps = ps.using(salt_size=128, rounds=100000)
+                username_hash = cust_ps.hash(username)
+                password_hash = cust_ps.hash(password)
+                with open(datFile, 'ab') as csv_file:
+                    csv_writer = csv.DictWriter(csv_file, fieldnames=['username','password'], lineterminator = '\n')
+                    csv_writer.writerow({'username':username_hash, 'password': password_hash})
+                    return True
+            else:
+                print("Password needs to obey the password rules.")
+                attempts -=1
 
 
 def check_password_rules(string):
@@ -78,5 +75,15 @@ def check_password_rules(string):
         return False
         
     
+def validate_from_data_by_field(fileName, string, field):
+    """This is a function for validating the field."""
 
-    
+    from passlib.hash import pbkdf2_sha512 as ps
+    import csv
+    with open(fileName, 'rb') as csv_file:
+        csv_reader = csv.DictReader(csv_file, delimiter=',')
+        for row in csv_reader:
+            fieldHash = row[field]
+            if ps.verify(string, fieldHash):
+                return True
+
