@@ -2,9 +2,8 @@
 
 def validate_input_username_password(datFile='data.csv', attempts=3):
 
-    """This is a function for validating the username & password. The
-    username and password is read from the datFile. The max number of
-    tries is defined by the attempts agruments."""    
+    """verify the username and password.
+    """
 
     from getpass import getpass
     while True:
@@ -12,78 +11,80 @@ def validate_input_username_password(datFile='data.csv', attempts=3):
         username = raw_input("Username: ")
         password = getpass("Password: ")
         if attempts == 0:
-            print("Max number of incorrect username Or password reached.")
+            print("Max number of attempts reached.")
             return False
-        if validate_from_data_by_field(datFile, username, 'username') and validate_from_data_by_field(datFile, password, 'password'):
-            print("Both username & password are correct.")
+        if validate_from_csv_data_by_field(datFile, username, 'username') and validate_from_csv_data_by_field(datFile, password, 'password'):
+            print("both username and password is matching")
             return True
-        attempts -=1
-        print("incorrect username or password, you have " + str(attempts) + " more tries")
-
-
+        print("incorrect user name or password, you have " + str(attempts) + " more tries")
+        attempts -= 1
 
 def add_new_user(datFile='data.csv', attempts=5):
-    
-    """This is a function for adding new user and password. The new user
-    data is stored in datFile. """
-    
+
+    """This is a function to add new user. The data will be stored in
+    datFile with max number of attempts."""
+
     from getpass import getpass
     from passlib.hash import pbkdf2_sha512 as ps
     import csv
     while True:
-        if attempts==0:
-            print("max numver of attempts reached")
+
+        if attempts == 0:
+            print("max number of attempts reached.")
             return False
         username = raw_input("Username: ")
-        if validate_from_data_by_field(datFile, username, 'username'):
-            print("username already exists, Please pick a different name")
+        if validate_from_csv_data_by_field(datFile, username, 'username'):
+            print("Username exists, please pick a different username.")
             attempts -= 1
         else:
             password = getpass("Password: ")
-            if check_password_rules(password):
-                print("Password is obeying password rules.")
-                cust_ps = ps.using(salt_size=128, rounds=100000)
+            if check_password_rule(password):
+                print("Password is obeying the password rules.")
+                cust_ps = ps.using(salt_size = 128, rounds = 100000)
                 username_hash = cust_ps.hash(username)
                 password_hash = cust_ps.hash(password)
                 with open(datFile, 'ab') as csv_file:
-                    csv_writer = csv.DictWriter(csv_file, fieldnames=['username','password'], lineterminator = '\n')
-                    csv_writer.writerow({'username':username_hash, 'password': password_hash})
+                    csv_writer = csv.DictWriter(csv_file, fieldnames = ['username', 'password'], lineterminator = '\n')
+                    csv_writer.writerow({'username':username_hash, 'password':password_hash})
                     return True
-            else:
-                print("Password needs to obey the password rules.")
-                attempts -=1
+                
 
 
-def check_password_rules(string):
-    """This function checks for password rule in the string. 
-    Password rules are:
+
+def check_password_rule(string):
+
+    """ Password checking using the rules below:
     1. should be at least 8 char long.
-    2. not more than 50.
-    3. Should contain at least one digit.
-    4. Should contain at least one special character. Special character are to be chosen from following: ?!@#$%^&*.
-    5. Should not contain any whitespace.
-    6. Should contain some lower case letter.
-    7. Should contain some upper case letter.
+    2. should be at most 50 char long.
+    3. should have at least one digit.
+    4. should have at least upper case char.
+    5. should have at least one special cahr.
+    6. should contain some lower case char.
+    7. should not contain any whitespace.
     """
 
     import re
-    if re.search("[a-z]+",string) and re.search("[A-Z]+",string) and re.search("[0-9]+",string) and re.search("[?!@#$%^&*]+",string) and re.search("[^ \t\n\r\f\v]",string) and (len(string)>8) and (len(string)<50):
-        print("Correct input for the password.")
+    if (len(string)>7) and (len(string)<50) and re.search("[0-9]+",string) and re.search("[A-Z]+",string) and re.search("[!@#$%^&*]",string) and re.search("[a-z]+",string) and re.search("[^ \t\n\r\f\v]",string):
+        print("Correct inputs for password given.")
         return True
     else:
-        print('Incorrect password\n\nPassword rules are listed below:\n 1. Should be at least 8 char long.\n 2. Not more than 50.\n 3. Should contain at least one digit.\n 4. Should contain at least one special character. Special character are to be chosen from following: ?!@#$%^&*.\n 5. Should not contain any whitespace.\n 6. Should contain some lower case letter.\n 7. Should contain some upper case letter.\n')
+        print("Incorrect password entered, Password should follow password rules:\n 1. should be at least 8 char long.\n 2. should be at most 50 char long.\n 3. should have at least one digit.\n 4. should have at least upper case char.\n 5. should have at least one special cahr.\n 6. should contain some lower case char.\n 7. should not contain any whitespace.\n")
         return False
-        
     
-def validate_from_data_by_field(fileName, string, field):
-    """This is a function for validating the field."""
+
+
+
+def validate_from_csv_data_by_field(fileName, string, field):
+
+    """ Validate string by filed of the fileName.
+    """
 
     from passlib.hash import pbkdf2_sha512 as ps
     import csv
     with open(fileName, 'rb') as csv_file:
-        csv_reader = csv.DictReader(csv_file, delimiter=',')
+        csv_reader = csv.DictReader(csv_file, delimiter = ',')
         for row in csv_reader:
             fieldHash = row[field]
             if ps.verify(string, fieldHash):
                 return True
-
+    
