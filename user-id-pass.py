@@ -10,13 +10,14 @@ def validate_input_username_password(datFile = "data.csv", attempts = 3):
     while True:
         username = raw_input("Username: ")
         password = getpass("Password: ")
+        username_password = username + " " + password
         if attempts == 0:
             print("max number of attempts has been reached.")
             return False
-        if validate_from_csv_file_by_filed(datFile, username, 'username') and validate_from_csv_file_by_filed(datFile, password, 'password'):
+        if validate_from_csv_file_by_filed(datFile, username_password, 'both'):
             print("both username and password are matching.")
             return True
-        print("Either username or password is not matching. You have" + str(attempts) + "tries left.")
+        print("Either username or password is not matching. You have " + str(attempts) + " tries left.")
         attempts -= 1
 
 
@@ -28,6 +29,7 @@ def add_new_user(datFile = 'data.csv', attempts = 5):
     from getpass import getpass
     from passlib.hash import pbkdf2_sha512 as ps
     import csv
+    import re
     while True:
         if attempts == 0:
             print("max number of attempts has been reached.")
@@ -35,6 +37,9 @@ def add_new_user(datFile = 'data.csv', attempts = 5):
         username = raw_input("Username: ")
         if validate_from_csv_file_by_filed(datFile, username, 'username'):
             print("username exists, please pick a different user name.")
+            attempts -= 1
+        elif re.search("[ \t\n]",username):
+            print("username should not contain any whitespace.")
             attempts -= 1
         else:
             password = getpass("Password: ")
@@ -76,11 +81,19 @@ def validate_from_csv_file_by_filed(fileName, string, field):
 
     from passlib.hash import pbkdf2_sha512 as ps
     import csv
+    import re
     with open(fileName, 'rb') as csv_file:
         csv_reader = csv.DictReader(csv_file, delimiter = ",")
         for row in csv_reader:
-            fieldHash = row[field]
-            if ps.verify(string, fieldHash):
-                return True
+            if field == 'username':
+                fieldHash = row[field]
+                if ps.verify(string, fieldHash):
+                    return True
+            elif field == 'both':
+                fieldHashUsername = row['username']
+                fieldHashPassword = row['password']
+                user, passwd = re.split(' ', string)
+                if ps.verify(user, fieldHashUsername) and ps.verify(passwd, fieldHashPassword):
+                    return True
 
     
