@@ -1,0 +1,29 @@
+#+TITLE: Emacs Screencast: making a login ID password validation using Python
+#+AUTHOR: Aritra Bhattacharjee
+#+EMAIL: analyzeninvest@protonmail.com
+
+
+This is an Emacs Screencast series on Creating a login ID password
+system in Python.
+
+* EP01: The basics of Hash
+In the first video, I am demonstrating the basics of the hash function
+& how it is used in Python. In Python it is used with the passlib library.
+
+Hashes are a great tool to converting variabe string to a fixed number
+of chars string.
+
+[[https://www.youtube.com/watch?v=cucdNg4AMM4&t=364s][YouTube]]
+[[https://d.tube/#!/v/cryptoaritra/xcy86bvc][DTube]]
+
+* EP02: the long coding of the functions
+[[https://www.youtube.com/watch?v=cucdNg4AMM4&t=364s][YouTube]]
+[[https://d.tube/#!/v/cryptoaritra/dsngxafp][DTube]]
+
+* EP03: fixing some of the bugs
+[[https://www.youtube.com/watch?v=cucdNg4AMM4&t=364s][YouTube]]
+[[https://d.tube/#!/v/cryptoaritra/6ss2mjbi][DTube]]
+
+* EP04: fixing more bugs & we are done (for now)
+[[https://www.youtube.com/watch?v=bClNLhbqIvI&t=6s][YouTube]]
+[[https://d.tube/#!/v/cryptoaritra/umpbdtzj][DTube]]
